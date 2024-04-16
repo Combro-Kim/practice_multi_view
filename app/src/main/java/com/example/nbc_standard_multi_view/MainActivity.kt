@@ -1,20 +1,22 @@
 package com.example.nbc_standard_multi_view
 
+import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.nbc_standard_multi_view.data.DataItem
-import com.example.nbc_standard_multi_view.data.viewobject.Card1ViewObject
-import com.example.nbc_standard_multi_view.data.viewobject.Card3ViewObject
-import com.example.nbc_standard_multi_view.adapter.DataAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.example.nbc_standard_multi_view.adapter.MyAdapter
 import com.example.nbc_standard_multi_view.databinding.ActivityMainBinding
-import com.example.nbc_standard_multi_view.viewtype.ViewType
+import com.example.nbc_standard_multi_view.item.MyItem
+import java.text.DecimalFormat
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding:ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityMainBinding.inflate(layoutInflater)
         super.onCreate(savedInstanceState)
@@ -25,64 +27,81 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        showTotalPrice()
+        recyclerViewDivider()
 
-        val adapter = DataAdapter(
-            arrayOf(
-                DataItem(
-                    ViewType.Card1.toString(),
-                    Card1ViewObject(
+        initRecyclerView()
+
+    }
+
+    private fun initRecyclerView() {
+        binding.recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        val adapter = MyAdapter().apply {
+            setItemList(
+                listOf(
+                    MyItem.Card1(
                         tvName = "Anderson",
                         num1 = 2423,
                         num2 = 3581,
                         num3 = 9503,
                         num4 = 2412,
-                        YM = "21/24",
-                        price = 3100.30)
-                ), DataItem(
-                    ViewType.Card2.toString(),
-                    Card3ViewObject(
+                        yM = "21/24",
+                        price = 3100.30
+                    ),
+                    MyItem.Card2(
                         tvName = "John",
                         num1 = 1234,
                         num2 = 5678,
                         num3 = 9876,
                         num4 = 5432,
-                        YM = "21/24",
+                        yM = "21/24",
                         price = 2459.60
-                    )
-                ), DataItem(
-                    ViewType.Card3.toString(),
-                    Card1ViewObject(
+                    ),
+                    MyItem.Card3(
                         tvName = "Mash",
                         num1 = 4564,
                         num2 = 4564,
                         num3 = 7895,
                         num4 = 4125,
-                        YM = "21/24",
+                        yM = "21/24",
                         price = 4567.20
                     )
                 )
             )
-        )
+        }
 
         binding.recyclerView.adapter = adapter
-        binding.recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
 
+        adapter.itemClick = object : MyAdapter.ItemClick {
+            override fun onClick(view: View, position: Int) {
+                val selectedData = adapter.getItemList()[position]
+                val intent = Intent(this@MainActivity, DetailActivity::class.java)
+                val bundle = Bundle().apply {
+                    putParcelable("selectedData", selectedData)
+                }
+                intent.putExtras(bundle)
+                startActivity(intent)
+            }
+
+        }
     }
 
 
-//    private fun initRecyclerView() {
-//        val adapter = CommonAdapter(dataList())
-//        val dataList = dataList()
-//        binding.recyclerView.adapter = adapter
-//
-//        adapter.itemClick = object : DataAdapter.ItemClick {
-//            override fun onClick(view: View, position: Int) {
-//                val selectedData = dataList[position]
-//                val intent = Intent(this@MainActivity, DetailActivity::class.java)
-//                intent.putExtra("selectedData", selectedData)
-//                startActivity(intent)
-//            }
-//        }
-//    }
+    //RecyclerView item 간격 추가
+    private fun recyclerViewDivider() {
+        binding.recyclerView.addItemDecoration(object : RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+                super.getItemOffsets(outRect, view, parent, state)
+                outRect.bottom = 40
+            }
+        })
+    }
+
+    //전체 값 더하기(임시)
+    private fun showTotalPrice() {
+        val totalPrice = listOf(3100.30,2459.60,4567.20).sum()
+        val decimal = DecimalFormat("#,##,###.00")
+        binding.tvDollar.text = decimal.format(totalPrice)
+    }
 }

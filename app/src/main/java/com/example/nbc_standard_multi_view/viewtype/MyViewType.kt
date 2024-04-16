@@ -1,5 +1,5 @@
 package com.example.nbc_standard_multi_view.viewtype
 
-enum class ViewType {
-    Card1, Card2, Card3
+enum class MyViewType {
+    CARD1, CARD2, CARD3
 }
